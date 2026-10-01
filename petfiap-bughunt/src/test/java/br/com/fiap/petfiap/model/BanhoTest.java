@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -33,7 +34,7 @@ public class BanhoTest {
     }
 
     @Test
-    public void deveCalcularPrecoDeAcordoComOporte(){
+    public void deveCalcularPrecoDeAcordoComOPorte() {
         // Arrange
         Banho banhoPequeno = new Banho(
                 1, "Rex", "PEQUENO", "Ana",
@@ -48,13 +49,13 @@ public class BanhoTest {
                 LocalDateTime.of(2026, 10, 1, 12, 0));
 
         // Act
-        double precoPequeno = banhoPequeno.calcularPreco();
-        double precoMedio = banhoMedio.calcularPreco();
-        double precoGrande = banhoGrande.calcularPreco();
+        List<Double> precos = List.of(
+                banhoPequeno.calcularPreco(),
+                banhoMedio.calcularPreco(),
+                banhoGrande.calcularPreco()
+        );
 
         // Assert
-        assertEquals(60.0, precoPequeno);
-        assertEquals(80.0, precoMedio);
-        assertEquals(100.0, precoGrande);
+        assertEquals(List.of(60.0, 80.0, 100.0), precos);
     }
 }
