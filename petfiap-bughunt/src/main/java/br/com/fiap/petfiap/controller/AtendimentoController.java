@@ -23,83 +23,55 @@ public class AtendimentoController {
     @Autowired
     private AgendaService service;
 
-    // POST /api/atendimentos?tutorNome=Ana - Agendar atendimento
-    // Ex.: POST "/api/atendimentos?tipo=BANHO&petNome=Rex&porte=PEQUENO&tutorNome=Ana&dataHora=2026-10-01T10:00"
     @PostMapping
     public ResponseEntity<Atendimento> agendar(
             @RequestParam String tipo,
             @RequestParam String petNome,
             @RequestParam String porte,
             @RequestParam String tutorNome,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dataHora) {
-        try {
-            int protocolo = GeradorProtocolo.getInstancia().proximo();
-            Atendimento atendimento = new AtendimentoBuilder()
-                    .comTipo(tipo)
-                    .comPet(petNome, porte)
-                    .comTutor(tutorNome)
-                    .comDataHora(dataHora)
-                    .construir(protocolo);
-            return ResponseEntity.status(201).body(service.agendar(atendimento));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        } catch (HorarioOcupadoException e) {
-            return ResponseEntity.status(409).build();
-        }
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime dataHora) {
+
+        int protocolo = GeradorProtocolo.getInstancia().proximo();
+
+        Atendimento atendimento = new AtendimentoBuilder()
+                .comTipo(tipo)
+                .comPet(petNome, porte)
+                .comTutor(tutorNome)
+                .comDataHora(dataHora)
+                .construir(protocolo);
+
+        return ResponseEntity.status(201).body(service.agendar(atendimento));
     }
 
-    // GET /api/atendimentos/{id} - Buscar por id
     @GetMapping("/{id}")
     public ResponseEntity<Atendimento> buscarPorId(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(service.buscarPorId(id));
-        } catch (AtendimentoNaoEncontradoException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(service.buscarPorId(id));
     }
 
-    // GET /api/atendimentos/pet/{nome} - Atendimentos de um pet
     @GetMapping("/pet/{nome}")
     public List<Atendimento> buscarPorPet(@PathVariable String nome) {
         return service.buscarPorPet(nome);
     }
 
-    // GET /api/atendimentos/{id}/resumo - Preco, pontos e duracao (polimorfismo na pratica)
     @GetMapping("/{id}/resumo")
     public ResponseEntity<Map<String, Object>> resumo(@PathVariable Long id) {
-        try {
-            Atendimento atendimento = service.buscarPorId(id);
-            return ResponseEntity.ok(Map.of(
-                    "tipo", atendimento.getTipo(),
-                    "preco", atendimento.calcularPreco(),
-                    "pontosFidelidade", atendimento.calcularPontosFidelidade(),
-                    "duracaoMinutos", atendimento.getDuracaoMinutos()));
-        } catch (AtendimentoNaoEncontradoException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Atendimento atendimento = service.buscarPorId(id);
+
+        return ResponseEntity.ok(Map.of(
+                "tipo", atendimento.getTipo(),
+                "preco", atendimento.calcularPreco(),
+                "pontosFidelidade", atendimento.calcularPontosFidelidade(),
+                "duracaoMinutos", atendimento.getDuracaoMinutos()));
     }
 
-    // POST /api/atendimentos/{id}/conclusao - Concluir atendimento
     @PostMapping("/{id}/conclusao")
     public ResponseEntity<Atendimento> concluir(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(service.concluir(id));
-        } catch (AtendimentoNaoEncontradoException e) {
-            return ResponseEntity.notFound().build();
-        } catch (StatusInvalidoException e) {
-            return ResponseEntity.status(409).build();
-        }
+        return ResponseEntity.ok(service.concluir(id));
     }
 
-    // POST /api/atendimentos/{id}/cancelamento - Cancelar atendimento
     @PostMapping("/{id}/cancelamento")
     public ResponseEntity<Atendimento> cancelar(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(service.cancelar(id));
-        } catch (AtendimentoNaoEncontradoException e) {
-            return ResponseEntity.notFound().build();
-        } catch (StatusInvalidoException e) {
-            return ResponseEntity.status(409).build();
-        }
+        return ResponseEntity.ok(service.cancelar(id));
     }
 }
